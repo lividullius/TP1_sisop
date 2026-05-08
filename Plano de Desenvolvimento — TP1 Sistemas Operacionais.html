@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<!-- saved from url=(0112)file:///Users/arthurtesta/Documents/Claude/Projects/Sistemas%20Operacionais/plano_tp1_sistemas_operacionais.html -->
+<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plano de Desenvolvimento — TP1 Sistemas Operacionais</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --accent: #f59e0b;
+      --accent-light: #fffbeb;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --red: #dc2626;
+      --red-light: #fef2f2;
+      --purple: #7c3aed;
+      --purple-light: #f5f3ff;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+    }
+    .header .subtitle {
+      font-size: 16px;
+      color: var(--gray-500);
+      margin-bottom: 16px;
+    }
+    .header .tags {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .header .tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* Overview grid */
+    .overview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .overview-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .overview-card .number {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .overview-card .label {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 40px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary);
+      display: inline-block;
+    }
+
+    /* Etapa card */
+    .etapa {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .etapa:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .etapa-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .etapa-header:hover {
+      background: var(--gray-50);
+    }
+    .etapa-num {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .etapa-num.base { background: var(--green); }
+    .etapa-num.nucleo { background: var(--primary); }
+    .etapa-num.critico { background: var(--red); }
+    .etapa-num.interface { background: var(--purple); }
+
+    .etapa-info { flex: 1; }
+    .etapa-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+    .etapa-info .meta {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+    .etapa-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-base { background: var(--green-light); color: var(--green); }
+    .badge-nucleo { background: var(--primary-light); color: var(--primary); }
+    .badge-critico { background: var(--red-light); color: var(--red); }
+    .badge-interface { background: var(--purple-light); color: var(--purple); }
+
+    .etapa-toggle {
+      font-size: 20px;
+      color: var(--gray-300);
+      transition: transform 0.2s;
+    }
+    .etapa.open .etapa-toggle {
+      transform: rotate(180deg);
+    }
+
+    .etapa-body {
+      display: none;
+      padding: 0 24px 24px 84px;
+    }
+    .etapa.open .etapa-body {
+      display: block;
+    }
+
+    /* Conceito box */
+    .conceito {
+      background: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+    .conceito-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .conceito p {
+      font-size: 14px;
+      color: var(--gray-700);
+    }
+
+    /* Task list */
+    .tasks {
+      margin-bottom: 20px;
+    }
+    .tasks h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 10px;
+    }
+    .task {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 14px;
+      color: var(--gray-700);
+    }
+    .task:last-child { border-bottom: none; }
+    .task-check {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--gray-300);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Classes sugeridas */
+    .classes {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .class-tag {
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      background: var(--gray-100);
+      color: var(--gray-700);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--gray-200);
+    }
+
+    /* Exemplo box */
+    .exemplo {
+      background: var(--gray-900);
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-top: 16px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+    .exemplo .comment { color: #6b7280; }
+    .exemplo .keyword { color: #60a5fa; }
+    .exemplo .string { color: #34d399; }
+    .exemplo .number { color: #fbbf24; }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+      margin-top: 24px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--gray-200);
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 24px;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-dot {
+      position: absolute;
+      left: -23px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .timeline-content h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+    .timeline-content p {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+
+    /* Conceitos gerais section */
+    .conceitos-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .conceito-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .conceito-card h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .conceito-card p {
+      font-size: 13px;
+      color: var(--gray-500);
+      line-height: 1.5;
+    }
+
+    /* Ciclo do simulador */
+    .ciclo {
+      display: flex;
+      gap: 2px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .ciclo-step {
+      flex: 1;
+      min-width: 130px;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+      position: relative;
+    }
+    .ciclo-step .step-num {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .ciclo-step .step-text {
+      font-size: 12px;
+      color: var(--gray-700);
+      margin-top: 4px;
+    }
+    .ciclo-arrow {
+      display: flex;
+      align-items: center;
+      color: var(--gray-300);
+      font-size: 20px;
+      padding: 0 4px;
+    }
+
+    /* Diagrama de estados */
+    .estados-diagram {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .estados-diagram svg {
+      max-width: 100%;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-200);
+      font-size: 13px;
+      color: var(--gray-500);
+    }
+
+    @media (max-width: 640px) {
+      .overview { grid-template-columns: 1fr; }
+      .conceitos-grid { grid-template-columns: 1fr; }
+      .ciclo { flex-direction: column; }
+      .ciclo-arrow { transform: rotate(90deg); justify-content: center; }
+      .etapa-body { padding-left: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>Plano de Desenvolvimento — TP1</h1>
+      <p class="subtitle">Simulador de Execucao Dinamica de Processos com Escalonamento EDF</p>
+      <div class="tags">
+        <span class="tag">Java</span>
+        <span class="tag">CLI / Terminal</span>
+        <span class="tag">Sistemas Operacionais</span>
+        <span class="tag">Assembly Hipotetica</span>
+      </div>
+    </div>
+
+    <!-- Overview -->
+    <div class="overview">
+      <div class="overview-card">
+        <div class="number">6</div>
+        <div class="label">Etapas de desenvolvimento</div>
+      </div>
+      <div class="overview-card">
+        <div class="number">11</div>
+        <div class="label">Instrucoes assembly</div>
+      </div>
+      <div class="overview-card">
+        <div class="number">EDF</div>
+        <div class="label">Politica de escalonamento</div>
+      </div>
+    </div>
+
+    <!-- Conceitos Fundamentais -->
+    <div class="section">
+      <h2 class="section-title">Conceitos Fundamentais</h2>
+      <div class="conceitos-grid">
+        <div class="conceito-card">
+          <h4>PCB (Process Control Block)</h4>
+          <p>Estrutura que guarda o "estado" de cada processo: valores do acumulador (ACC), ponteiro de instrucao (PC), estado atual (Pronto, Executando, Bloqueado) e parametros de escalonamento.</p>
+        </div>
+        <div class="conceito-card">
+          <h4>EDF (Earliest Deadline First)</h4>
+          <p>Politica de escalonamento dinamico e preemptivo. A cada instante, a tarefa com o deadline absoluto mais proximo ganha o processador. Se uma tarefa nova chega com deadline menor, ela interrompe a atual.</p>
+        </div>
+        <div class="conceito-card">
+          <h4>Periodo (Pi) e Deadline</h4>
+          <p>A cada Pi unidades de tempo, a tarefa "renasce" com um novo deadline absoluto = tempo_atual + Pi. Neste trabalho, deadline = periodo. A tarefa precisa completar Ci instrucoes antes do deadline.</p>
+        </div>
+        <div class="conceito-card">
+          <h4>Troca de Contexto</h4>
+          <p>Quando o processador troca de tarefa, salva ACC e PC da tarefa atual no PCB e restaura os valores salvos da proxima tarefa. Assim cada tarefa retoma de onde parou.</p>
+        </div>
+        <div class="conceito-card">
+          <h4>Bloqueio (I/O)</h4>
+          <p>SYSCALL 1 (imprimir) e SYSCALL 2 (ler) simulam operacoes de I/O. O processo fica bloqueado por 1 a 3 unidades de tempo (aleatorio), liberando o processador para outra tarefa.</p>
+        </div>
+        <div class="conceito-card">
+          <h4>Modos de Enderecamento</h4>
+          <p>Imediato (#): o operando e o valor literal. Direto (sem #): o operando e o indice na memoria de dados cujo conteudo sera usado. Ex: ADD #5 soma 5; ADD x soma o valor de x.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagrama de estados -->
+    <div class="section">
+      <h2 class="section-title">Diagrama de Estados dos Processos</h2>
+      <div class="estados-diagram">
+        <svg viewBox="0 0 660 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#6b7280"></polygon>
+            </marker>
+          </defs>
+          <!-- Boxes -->
+          <rect x="20" y="80" width="140" height="50" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"></rect>
+          <text x="90" y="110" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#2563eb">PRONTO</text>
+
+          <rect x="260" y="80" width="140" height="50" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"></rect>
+          <text x="330" y="110" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#16a34a">EXECUTANDO</text>
+
+          <rect x="500" y="80" width="140" height="50" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2"></rect>
+          <text x="570" y="110" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#dc2626">BLOQUEADO</text>
+
+          <!-- Arrows -->
+          <line x1="160" y1="95" x2="255" y2="95" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"></line>
+          <text x="208" y="88" text-anchor="middle" font-family="system-ui" font-size="10" fill="#6b7280">escalonado</text>
+
+          <line x1="255" y1="120" x2="160" y2="120" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"></line>
+          <text x="208" y="140" text-anchor="middle" font-family="system-ui" font-size="10" fill="#6b7280">preempcao / Ci fim</text>
+
+          <line x1="400" y1="100" x2="495" y2="100" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"></line>
+          <text x="448" y="93" text-anchor="middle" font-family="system-ui" font-size="10" fill="#6b7280">SYSCALL 1/2</text>
+
+          <path d="M 500 130 Q 330 200 160 130" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"></path>
+          <text x="330" y="190" text-anchor="middle" font-family="system-ui" font-size="10" fill="#6b7280">timer expirou</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Ciclo do simulador -->
+    <div class="section">
+      <h2 class="section-title">Ciclo do Simulador (a cada unidade de tempo)</h2>
+      <div class="ciclo">
+        <div class="ciclo-step">
+          <div class="step-num">1</div>
+          <div class="step-text">Verificar chegadas e reativacoes periodicas</div>
+        </div>
+        <div class="ciclo-arrow">→</div>
+        <div class="ciclo-step">
+          <div class="step-num">2</div>
+          <div class="step-text">Atualizar fila EDF (ordenar por deadline)</div>
+        </div>
+        <div class="ciclo-arrow">→</div>
+        <div class="ciclo-step">
+          <div class="step-num">3</div>
+          <div class="step-text">Executar 1 instrucao da tarefa escolhida</div>
+        </div>
+        <div class="ciclo-arrow">→</div>
+        <div class="ciclo-step">
+          <div class="step-num">4</div>
+          <div class="step-text">Tratar SYSCALL e bloqueio</div>
+        </div>
+        <div class="ciclo-arrow">→</div>
+        <div class="ciclo-step">
+          <div class="step-num">5</div>
+          <div class="step-text">Decrementar timers de bloqueio</div>
+        </div>
+        <div class="ciclo-arrow">→</div>
+        <div class="ciclo-step">
+          <div class="step-num">6</div>
+          <div class="step-text">Checar perdas de deadline</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Etapas de Desenvolvimento -->
+    <div class="section">
+      <h2 class="section-title">Etapas de Desenvolvimento</h2>
+
+      <!-- Etapa 1 -->
+      <div class="etapa open" id="etapa1">
+        <div class="etapa-header" onclick="toggleEtapa(&#39;etapa1&#39;)">
+          <div class="etapa-num base">1</div>
+          <div class="etapa-info">
+            <h3>Parser de Arquivos</h3>
+            <div class="meta">Ler .code/.data, tokenizar instrucoes, resolver labels</div>
+          </div>
+          <span class="etapa-badge badge-base">Base</span>
+          <span class="etapa-toggle">▼</span>
+        </div>
+        <div class="etapa-body">
+          <div class="conceito">
+            <div class="conceito-title">Conceito Didatico — Por que um Parser?</div>
+            <p>Um processador real nao entende texto. Ele entende instrucoes binarias. O simulador precisa fazer o mesmo: transformar <code>LOAD variable</code> em algo como um objeto <code>Instruction("LOAD", "variable", DIRETO)</code>. Isso e o que compiladores e montadores fazem na vida real. O parser faz duas passadas: a primeira mapeia labels para indices, a segunda resolve as referencias.</p>
+          </div>
+          <div class="tasks">
+            <h4>Tarefas de implementacao</h4>
+            <div class="task"><div class="task-check"></div>Criar classe <code>Parser</code> que le arquivo linha a linha</div>
+            <div class="task"><div class="task-check"></div>Identificar secoes <code>.code/.endcode</code> e <code>.data/.enddata</code></div>
+            <div class="task"><div class="task-check"></div>Extrair mnemonico, operando e modo de enderecamento (# = imediato)</div>
+            <div class="task"><div class="task-check"></div>Primeira passada: mapear labels (ex: <code>ponto1:</code>) para indice da instrucao</div>
+            <div class="task"><div class="task-check"></div>Segunda passada: substituir referencias a labels pelos indices</div>
+            <div class="task"><div class="task-check"></div>Secao <code>.data</code>: mapear variaveis para posicoes na memoria com valor inicial</div>
+          </div>
+          <div>
+            <h4 style="font-size:14px; font-weight:600; color:#374151; margin-bottom:8px;">Classes sugeridas</h4>
+            <div class="classes">
+              <span class="class-tag">Instruction</span>
+              <span class="class-tag">Program</span>
+              <span class="class-tag">Parser</span>
+              <span class="class-tag">AddressingMode (enum)</span>
+            </div>
+          </div>
+          <div class="exemplo">
+            <span class="comment">// Exemplo de como a instrucao e representada internamente:</span><br>
+            <span class="keyword">class</span> Instruction {<br>
+            &nbsp;&nbsp;String mnemonic;&nbsp;&nbsp;&nbsp;<span class="comment">// "LOAD", "SUB", "BRPOS"...</span><br>
+            &nbsp;&nbsp;String operand;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// "variable", "1", "ponto1"</span><br>
+            &nbsp;&nbsp;AddressingMode mode; <span class="comment">// IMMEDIATE ou DIRECT</span><br>
+            }<br><br>
+            <span class="comment">// "SUB #1" vira:</span><br>
+            <span class="keyword">new</span> Instruction(<span class="string">"SUB"</span>, <span class="string">"1"</span>, IMMEDIATE)<br><br>
+            <span class="comment">// "LOAD variable" vira:</span><br>
+            <span class="keyword">new</span> Instruction(<span class="string">"LOAD"</span>, <span class="string">"variable"</span>, DIRECT)
+          </div>
+        </div>
+      </div>
+
+      <!-- Etapa 2 -->
+      <div class="etapa" id="etapa2">
+        <div class="etapa-header" onclick="toggleEtapa(&#39;etapa2&#39;)">
+          <div class="etapa-num base">2</div>
+          <div class="etapa-info">
+            <h3>Maquina Virtual (CPU)</h3>
+            <div class="meta">Registradores ACC e PC, ciclo fetch-execute</div>
+          </div>
+          <span class="etapa-badge badge-base">Base</span>
+          <span class="etapa-toggle">▼</span>
+        </div>
+        <div class="etapa-body">
+          <div class="conceito">
+            <div class="conceito-title">Conceito Didatico — Ciclo Fetch-Execute</div>
+            <p>Todo processador real opera num loop: busca a instrucao apontada pelo PC, decodifica qual operacao fazer, executa a operacao, e incrementa o PC. O simulador faz exatamente isso, so que em Java e uma instrucao por "unidade de tempo". Pense no PC como o "dedo" que aponta para a linha atual do programa.</p>
+          </div>
+          <div class="tasks">
+            <h4>Tarefas de implementacao</h4>
+            <div class="task"><div class="task-check"></div>Registradores: <code>int acc</code> e <code>int pc</code></div>
+            <div class="task"><div class="task-check"></div>Area de memoria de dados: <code>int[] dataMemory</code></div>
+            <div class="task"><div class="task-check"></div>Metodo <code>executeOneInstruction()</code> com switch por mnemonico</div>
+            <div class="task"><div class="task-check"></div>Implementar operacoes aritmeticas: ADD, SUB, MULT, DIV</div>
+            <div class="task"><div class="task-check"></div>Implementar LOAD e STORE (leitura/escrita na memoria de dados)</div>
+            <div class="task"><div class="task-check"></div>Implementar saltos: BRANY, BRPOS, BRZERO, BRNEG</div>
+            <div class="task"><div class="task-check"></div>Tratar modos imediato vs. direto em cada instrucao</div>
+            <div class="task"><div class="task-check"></div><strong>Teste isolado:</strong> executar 1 programa sozinho do inicio ao fim</div>
+          </div>
+          <div>
+            <h4 style="font-size:14px; font-weight:600; color:#374151; margin-bottom:8px;">Classes sugeridas</h4>
+            <div class="classes">
+              <span class="class-tag">CPU</span>
+              <span class="class-tag">ExecutionResult (enum)</span>
+            </div>
+          </div>
+          <div class="exemplo">
+            <span class="comment">// Nucleo do metodo executeOneInstruction():</span><br>
+            <span class="keyword">switch</span> (instr.mnemonic) {<br>
+            &nbsp;&nbsp;<span class="keyword">case</span> <span class="string">"ADD"</span>:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span> val = resolveOperand(instr);<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;acc = acc + val;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;pc++;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">break</span>;<br>
+            &nbsp;&nbsp;<span class="keyword">case</span> <span class="string">"BRPOS"</span>:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (acc &gt; <span class="number">0</span>) pc = labelIndex;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">else</span> pc++;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">break</span>;<br>
+            &nbsp;&nbsp;<span class="comment">// ...</span><br>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Etapa 3 -->
+      <div class="etapa" id="etapa3">
+        <div class="etapa-header" onclick="toggleEtapa(&#39;etapa3&#39;)">
+          <div class="etapa-num nucleo">3</div>
+          <div class="etapa-info">
+            <h3>Modelo de Processos (PCB)</h3>
+            <div class="meta">Estados, contexto, parametros de escalonamento</div>
+          </div>
+          <span class="etapa-badge badge-nucleo">Nucleo</span>
+          <span class="etapa-toggle">▼</span>
+        </div>
+        <div class="etapa-body">
+          <div class="conceito">
+            <div class="conceito-title">Conceito Didatico — PCB (Process Control Block)</div>
+            <p>No SO real, quando o processador troca de processo, salva o estado atual (registradores, PC) numa estrutura chamada PCB. Quando o processo volta a executar, o SO restaura esses valores. Sem isso, o processo "perderia a memoria" de onde parou. Pense no PCB como um "marcador de livro" para cada processo.</p>
+          </div>
+          <div class="tasks">
+            <h4>Tarefas de implementacao</h4>
+            <div class="task"><div class="task-check"></div>Classe <code>PCB</code> com campos: id, nome, estado, accSalvo, pcSalvo</div>
+            <div class="task"><div class="task-check"></div>Referencia ao <code>Program</code> carregado</div>
+            <div class="task"><div class="task-check"></div>Parametros EDF: periodo (Pi), deadline absoluto, Ci total e Ci restante</div>
+            <div class="task"><div class="task-check"></div>Arrival time e timer de bloqueio</div>
+            <div class="task"><div class="task-check"></div>Enum <code>ProcessState</code>: PRONTO, EXECUTANDO, BLOQUEADO, FINALIZADO</div>
+            <div class="task"><div class="task-check"></div>Metodos: <code>salvarContexto(acc, pc)</code> e <code>restaurarContexto()</code></div>
+          </div>
+          <div>
+            <h4 style="font-size:14px; font-weight:600; color:#374151; margin-bottom:8px;">Classes sugeridas</h4>
+            <div class="classes">
+              <span class="class-tag">PCB</span>
+              <span class="class-tag">ProcessState (enum)</span>
+            </div>
+          </div>
+          <div class="exemplo">
+            <span class="keyword">class</span> PCB {<br>
+            &nbsp;&nbsp;<span class="keyword">int</span> id;<br>
+            &nbsp;&nbsp;String name;<br>
+            &nbsp;&nbsp;ProcessState state;&nbsp;&nbsp;<span class="comment">// PRONTO, EXECUTANDO, BLOQUEADO</span><br>
+            &nbsp;&nbsp;<span class="keyword">int</span> savedAcc, savedPc;<br>
+            &nbsp;&nbsp;Program program;<br>
+            &nbsp;&nbsp;<span class="keyword">int</span>[] dataMemory;&nbsp;&nbsp;&nbsp;<span class="comment">// copia propria da memoria de dados</span><br>
+            &nbsp;&nbsp;<span class="keyword">int</span> period;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// Pi</span><br>
+            &nbsp;&nbsp;<span class="keyword">int</span> absoluteDeadline;<span class="comment">// deadline atual</span><br>
+            &nbsp;&nbsp;<span class="keyword">int</span> computationTime; <span class="comment">// Ci total</span><br>
+            &nbsp;&nbsp;<span class="keyword">int</span> remainingCi;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// quanto falta no periodo</span><br>
+            &nbsp;&nbsp;<span class="keyword">int</span> arrivalTime;<br>
+            &nbsp;&nbsp;<span class="keyword">int</span> blockTimer;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// tempo restante bloqueado</span><br>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Etapa 4 -->
+      <div class="etapa" id="etapa4">
+        <div class="etapa-header" onclick="toggleEtapa(&#39;etapa4&#39;)">
+          <div class="etapa-num critico">4</div>
+          <div class="etapa-info">
+            <h3>Escalonador EDF</h3>
+            <div class="meta">Fila de prontos por deadline, preempcao, reativacao periodica</div>
+          </div>
+          <span class="etapa-badge badge-critico">Critico</span>
+          <span class="etapa-toggle">▼</span>
+        </div>
+        <div class="etapa-body">
+          <div class="conceito">
+            <div class="conceito-title">Conceito Didatico — Como o EDF funciona</div>
+            <p>Imagine 3 tarefas: A (deadline=10), B (deadline=7), C (deadline=5). O EDF escolhe C primeiro (deadline mais proximo). Quando C termina, escolhe B. Se no meio da execucao de B aparece D com deadline=4, D preempta B (toma o processador). E "dinamico" porque a prioridade muda: a cada periodo, a tarefa ganha um novo deadline = tempo_atual + Pi.</p>
+          </div>
+          <div class="tasks">
+            <h4>Tarefas de implementacao</h4>
+            <div class="task"><div class="task-check"></div>Fila de prontos: <code>PriorityQueue&lt;PCB&gt;</code> ordenada por deadline absoluto</div>
+            <div class="task"><div class="task-check"></div>A cada tick: verificar novas chegadas (arrival time == tempo atual)</div>
+            <div class="task"><div class="task-check"></div>Reativacao periodica: se tempo_atual e multiplo de Pi, reativar tarefa</div>
+            <div class="task"><div class="task-check"></div>Na reativacao: novo deadline = tempo_atual + Pi, resetar Ci e PC</div>
+            <div class="task"><div class="task-check"></div>Preempcao: se tarefa na fila tem deadline menor que a tarefa em execucao, trocar</div>
+            <div class="task"><div class="task-check"></div>Deteccao de perda de deadline: tempo_atual &gt;= deadline e remainingCi &gt; 0</div>
+            <div class="task"><div class="task-check"></div><strong>Teste:</strong> simular 2+ tarefas com periodos diferentes e validar a timeline</div>
+          </div>
+          <div>
+            <h4 style="font-size:14px; font-weight:600; color:#374151; margin-bottom:8px;">Classes sugeridas</h4>
+            <div class="classes">
+              <span class="class-tag">Scheduler</span>
+              <span class="class-tag">SimulationEngine</span>
+            </div>
+          </div>
+          <div class="exemplo">
+            <span class="comment">// Logica central do escalonador por tick:</span><br>
+            <span class="keyword">void</span> tick(<span class="keyword">int</span> currentTime) {<br>
+            &nbsp;&nbsp;<span class="comment">// 1. Chegadas e reativacoes</span><br>
+            &nbsp;&nbsp;checkArrivals(currentTime);<br>
+            &nbsp;&nbsp;checkPeriodicReactivations(currentTime);<br><br>
+            &nbsp;&nbsp;<span class="comment">// 2. Escolher tarefa (menor deadline)</span><br>
+            &nbsp;&nbsp;PCB next = readyQueue.peek();<br><br>
+            &nbsp;&nbsp;<span class="comment">// 3. Preempcao?</span><br>
+            &nbsp;&nbsp;<span class="keyword">if</span> (running != <span class="keyword">null</span> &amp;&amp; next.deadline &lt; running.deadline) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;preempt(running, next);<br>
+            &nbsp;&nbsp;}<br><br>
+            &nbsp;&nbsp;<span class="comment">// 4. Executar 1 instrucao</span><br>
+            &nbsp;&nbsp;cpu.executeOneInstruction(running);<br>
+            &nbsp;&nbsp;running.remainingCi--;<br>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Etapa 5 -->
+      <div class="etapa" id="etapa5">
+        <div class="etapa-header" onclick="toggleEtapa(&#39;etapa5&#39;)">
+          <div class="etapa-num nucleo">5</div>
+          <div class="etapa-info">
+            <h3>SYSCALL e Bloqueio</h3>
+            <div class="meta">Chamadas de sistema, I/O simulado, timer de bloqueio</div>
+          </div>
+          <span class="etapa-badge badge-nucleo">Nucleo</span>
+          <span class="etapa-toggle">▼</span>
+        </div>
+        <div class="etapa-body">
+          <div class="conceito">
+            <div class="conceito-title">Conceito Didatico — Chamadas de Sistema e I/O</div>
+            <p>Quando um processo precisa fazer I/O (imprimir ou ler do teclado), ele nao pode continuar executando — precisa esperar o dispositivo. No SO real, o processo fica "bloqueado" ate o I/O completar. No simulador, isso e representado por um timer aleatorio de 1 a 3 unidades de tempo. Enquanto bloqueado, outra tarefa pode usar o processador.</p>
+          </div>
+          <div class="tasks">
+            <h4>Tarefas de implementacao</h4>
+            <div class="task"><div class="task-check"></div><code>SYSCALL 0</code>: finalizar tarefa no periodo (halt)</div>
+            <div class="task"><div class="task-check"></div><code>SYSCALL 1</code>: imprimir acc no terminal + bloquear [1,3] ut</div>
+            <div class="task"><div class="task-check"></div><code>SYSCALL 2</code>: ler inteiro do teclado para acc + bloquear [1,3] ut</div>
+            <div class="task"><div class="task-check"></div>Mover processo para BLOQUEADO com timer aleatorio</div>
+            <div class="task"><div class="task-check"></div>A cada tick: decrementar timers. Se timer == 0, mover para PRONTO</div>
+            <div class="task"><div class="task-check"></div>Reinserir na fila EDF ao desbloquear</div>
+          </div>
+          <div>
+            <h4 style="font-size:14px; font-weight:600; color:#374151; margin-bottom:8px;">Classes sugeridas</h4>
+            <div class="classes">
+              <span class="class-tag">SyscallHandler</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Etapa 6 -->
+      <div class="etapa" id="etapa6">
+        <div class="etapa-header" onclick="toggleEtapa(&#39;etapa6&#39;)">
+          <div class="etapa-num interface">6</div>
+          <div class="etapa-info">
+            <h3>Interface CLI e Saida</h3>
+            <div class="meta">Carga de tarefas, configuracao, timeline, alertas de deadline</div>
+          </div>
+          <span class="etapa-badge badge-interface">Interface</span>
+          <span class="etapa-toggle">▼</span>
+        </div>
+        <div class="etapa-body">
+          <div class="tasks">
+            <h4>Tarefas de implementacao</h4>
+            <div class="task"><div class="task-check"></div>Menu para informar: arquivo(s) de programa, arrival time, Ci e Pi</div>
+            <div class="task"><div class="task-check"></div>A cada tick: imprimir tempo, tarefa executando, instrucao, estados</div>
+            <div class="task"><div class="task-check"></div>Timeline final tipo Gantt textual: <code>T1 T1 T2 T2 T1 -- T2 T1</code></div>
+            <div class="task"><div class="task-check"></div>Sinalizar perdas de deadline com nome e instante</div>
+            <div class="task"><div class="task-check"></div>Exibir resultado final: tarefas concluidas, deadlines perdidos</div>
+          </div>
+          <div class="exemplo">
+            <span class="comment">// Exemplo de saida esperada:</span><br><br>
+            t=0 &nbsp;| [T1: EXECUTANDO] LOAD variable &nbsp;| T2: PRONTO<br>
+            t=1 &nbsp;| [T1: EXECUTANDO] SUB #1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| T2: PRONTO<br>
+            t=2 &nbsp;| [T1: BLOQUEADO] &nbsp;SYSCALL 1 &nbsp;&nbsp;&nbsp;&nbsp;| [T2: EXECUTANDO]<br>
+            t=3 &nbsp;| [T1: BLOQUEADO] &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [T2: EXECUTANDO]<br>
+            t=4 &nbsp;| [T1: EXECUTANDO] BRPOS ponto1 &nbsp;| T2: PRONTO<br>
+            ...<br><br>
+            <span class="comment">// Timeline Gantt:</span><br>
+            &nbsp;&nbsp;0 &nbsp;1 &nbsp;2 &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9<br>
+            [ T1  T1  -- &nbsp;T2  T2  T1  T1  --  T2  T1 ]<br><br>
+            <span class="comment">// Alerta de deadline:</span><br>
+            <span style="color:#f87171;">DEADLINE MISS: Tarefa T2 no instante t=12</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ordem recomendada -->
+    <div class="section">
+      <h2 class="section-title">Ordem de Desenvolvimento Recomendada</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <h4>Etapa 1 + 2: Parser + CPU</h4>
+            <p>Construa a base. Ao final, voce deve conseguir executar 1 programa isolado do inicio ao fim.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: #22c55e; box-shadow: 0 0 0 2px #22c55e;"></div>
+          <div class="timeline-content">
+            <h4>Checkpoint: Teste com 1 programa</h4>
+            <p>Use o programa de exemplo do enunciado (Figura 1). Valide que ACC, PC e a saida estao corretos.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <h4>Etapa 3 + 4: PCB + Escalonador EDF</h4>
+            <p>Agora sim multiple tarefas. O escalonador gerencia quem executa e quando.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: #22c55e; box-shadow: 0 0 0 2px #22c55e;"></div>
+          <div class="timeline-content">
+            <h4>Checkpoint: Teste com 2+ tarefas</h4>
+            <p>Valide preempcao, troca de contexto e reativacao periodica. Compare com calculo manual.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <h4>Etapa 5: SYSCALL e Bloqueio</h4>
+            <p>Adicione as chamadas de sistema e o mecanismo de bloqueio/desbloqueio.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <h4>Etapa 6: Interface CLI e saida formatada</h4>
+            <p>Polir a interface, timeline Gantt e alertas de deadline.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: #f59e0b; box-shadow: 0 0 0 2px #f59e0b;"></div>
+          <div class="timeline-content">
+            <h4>Final: Testes integrados + Manual PDF</h4>
+            <p>Testar cenarios variados, gerar o manual do usuario, empacotar em .zip.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arquitetura de classes -->
+    <div class="section">
+      <h2 class="section-title">Arquitetura de Classes (Visao Geral)</h2>
+      <div class="conceitos-grid">
+        <div class="conceito-card">
+          <h4>Parser</h4>
+          <p>Le os arquivos de programa. Produz objetos <code>Program</code> com listas de <code>Instruction</code> e o mapa de memoria de dados.</p>
+        </div>
+        <div class="conceito-card">
+          <h4>CPU</h4>
+          <p>Executa instrucoes uma a uma. Recebe o PCB da tarefa em execucao, usa seu ACC/PC, e retorna o resultado (normal, syscall, halt).</p>
+        </div>
+        <div class="conceito-card">
+          <h4>PCB</h4>
+          <p>Representa um processo: estado, contexto salvo, parametros EDF (Pi, deadline, Ci), timer de bloqueio.</p>
+        </div>
+        <div class="conceito-card">
+          <h4>Scheduler</h4>
+          <p>Gerencia a fila de prontos (PriorityQueue por deadline), decide preempcao, trata reativacoes e detecta deadline miss.</p>
+        </div>
+        <div class="conceito-card">
+          <h4>SyscallHandler</h4>
+          <p>Interpreta SYSCALL 0/1/2, executa I/O, gerencia transicao para estado bloqueado e timers.</p>
+        </div>
+        <div class="conceito-card">
+          <h4>SimulationEngine (main)</h4>
+          <p>Loop principal do simulador. Coordena todos os modulos a cada unidade de tempo. Coleta e imprime resultados.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Plano gerado como apoio didatico para TP1 — Sistemas Operacionais</p>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleEtapa(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('open');
+    }
+  </script>
+
+</body></html>
