@@ -14,7 +14,6 @@ class Parser:
       2a: resolve referencias a labels nos operandos de salto
     """
 
-    MNEMONICS_NO_OPERAND = {"SYSCALL"}
     MNEMONICS_WITH_OPERAND = {
         "LOAD", "STORE", "ADD", "SUB", "MULT", "DIV",
         "BRANY", "BRPOS", "BRZERO", "BRNEG",

@@ -54,6 +54,7 @@ class SimulationEngine:
         else:
             self.gantt.append("--")
             self._log(t, "CPU ociosa")
+            print(f"t={t:3d} | CPU ociosa")
 
         # 6. Verificar deadline miss APOS execucao: evita falso positivo quando
         #    a ultima instrucao executa exatamente no tick do deadline
@@ -75,13 +76,17 @@ class SimulationEngine:
 
     def _check_periodic_reactivations(self, t: int):
         for p in self.all_pcbs:
-            if p.state == ProcessState.FINALIZADO:
-                # proximo periodo comeca quando t == arrival_time + k*period
-                offset = t - p.arrival_time
-                if offset > 0 and offset % p.period == 0:
-                    p.reset_for_new_period(t)
-                    heapq.heappush(self._ready, p)
-                    self._log(t, f"{p.name} reativado (novo deadline={p.absolute_deadline})")
+            if p.state not in (ProcessState.FINALIZADO, ProcessState.BLOQUEADO):
+                continue
+            # proximo periodo comeca quando t == arrival_time + k*period
+            offset = t - p.arrival_time
+            if offset > 0 and offset % p.period == 0:
+                if p.state == ProcessState.BLOQUEADO:
+                    # remove da lista de bloqueados antes de resetar
+                    self._blocked = [b for b in self._blocked if b is not p]
+                p.reset_for_new_period(t)
+                heapq.heappush(self._ready, p)
+                self._log(t, f"{p.name} reativado (novo deadline={p.absolute_deadline})")
 
     def _update_blocked(self, t: int):
         still_blocked = []
@@ -130,7 +135,8 @@ class SimulationEngine:
         self.gantt.append(p.name)
 
         result = self.cpu.execute_one(p)
-        p.remaining_ci -= 1
+        if result != ExecutionResult.HALT:
+            p.remaining_ci -= 1
 
         # log da linha
         others = [q for q in self.all_pcbs if q is not p

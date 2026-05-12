@@ -37,6 +37,8 @@ class CPU:
             pcb.pc += 1
 
         elif m == "STORE":
+            if instr.mode == AddressingMode.IMMEDIATE:
+                raise ValueError(f"Processo {pcb.name}: STORE nao suporta modo imediato (PC={pcb.pc})")
             idx = self._mem_index(instr, pcb)
             pcb.data_memory[idx] = pcb.acc
             pcb.pc += 1
