@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Gantt EDF — TP1 Sistemas Operacionais</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 24px; color: #1e293b; }
+  h1   { font-size: 1.4rem; margin-bottom: 4px; }
+  p.sub { font-size: .85rem; color: #64748b; margin-bottom: 24px; }
+
+  .container { overflow-x: auto; }
+
+  table.gantt {
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 12px;
+  }
+  table.gantt th, table.gantt td {
+    width: 28px;
+    min-width: 28px;
+    height: 32px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #e2e8f0;
+    padding: 0;
+    position: relative;
+  }
+  table.gantt th.label-col, table.gantt td.label-col {
+    width: 72px;
+    min-width: 72px;
+    text-align: right;
+    padding-right: 8px;
+    background: #f8fafc;
+    font-weight: 600;
+    border: none;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+  table.gantt thead th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 2px solid #cbd5e1;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  table.gantt thead th.label-col { z-index: 3; }
+
+  .badge {
+    display: inline-block;
+    font-size: 9px;
+    line-height: 1;
+    border-radius: 3px;
+    padding: 1px 2px;
+    margin: 1px;
+    font-weight: 700;
+    cursor: default;
+  }
+  .badge.preempt { background: #7c3aed; color: #fff; }
+  .badge.io      { background: #ea580c; color: #fff; }
+  .badge.miss    { background: #dc2626; color: #fff; }
+  .badge.dl      { background: #dc2626; color: #fff; font-size: 8px; }
+
+  /* legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; font-size: 13px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 18px; height: 18px; border-radius: 3px; border: 1px solid #cbd5e1; }
+
+  /* summary table */
+  table.summary { border-collapse: collapse; margin-top: 28px; font-size: 13px; }
+  table.summary th, table.summary td { padding: 6px 14px; border: 1px solid #e2e8f0; }
+  table.summary th { background: #f1f5f9; font-weight: 600; }
+  table.summary tr:nth-child(even) td { background: #f8fafc; }
+
+  /* events log */
+  .events { margin-top: 28px; }
+  .events h2 { font-size: 1rem; margin-bottom: 8px; }
+  .events ul { list-style: none; padding: 0; font-size: 12px; font-family: monospace;
+               max-height: 260px; overflow-y: auto;
+               background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; }
+  .events li { padding: 2px 0; border-bottom: 1px solid #f1f5f9; }
+  .ev-preempt  { color: #7c3aed; }
+  .ev-block    { color: #ea580c; }
+  .ev-miss     { color: #dc2626; font-weight: 700; }
+  .ev-arrival  { color: #0284c7; }
+  .ev-unblock  { color: #16a34a; }
+  .ev-halt     { color: #6b7280; }
+  .ev-period   { color: #0f766e; }
+</style>
+</head>
+<body>
+<h1>Gantt Chart — Escalonamento EDF</h1>
+<p class="sub">TP1 Sistemas Operacionais · PUCRS · Passe o mouse sobre as células para detalhes.</p>
+<div class="container">
+
+<table class="gantt">
+<thead><tr>
+<th class="label-col">Processo</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr></thead>
+<tbody>
+<tr><td class="label-col">prog2</td>
+<td style="background:#22c55e;" title="t=0 | prog2: EXECUTANDO | instr: LOAD x | arrival:prog2 (deadline=10)"></td>
+<td style="background:#22c55e;" title="t=1 | prog2: EXECUTANDO | instr: ADD #5"></td>
+<td style="background:#22c55e;" title="t=2 | prog2: EXECUTANDO | instr: STORE x"></td>
+<td style="background:#f97316;" title="t=3 | prog2: BLOQUEADO | instr: SYSCALL 1 | io_block:prog2 (timer=3)"><span class="badge io" title="I/O block">⏸</span></td>
+<td style="background:#f97316;" title="t=4 | prog2: BLOQUEADO | CPU ociosa"></td>
+<td style="background:#f97316;" title="t=5 | prog2: BLOQUEADO | CPU ociosa"></td>
+<td style="background:#9ca3af;" title="t=6 | prog2: TERMINADO | instr: SYSCALL 0 | unblock:prog2 | halt:prog2"></td>
+</tr>
+<tr><td class="label-col" style="color:#94a3b8;">CPU</td>
+<td style="background:#22c55e" title="t=0 | prog2 executa: LOAD x">prog2</td>
+<td style="background:#22c55e" title="t=1 | prog2 executa: ADD #5">prog2</td>
+<td style="background:#22c55e" title="t=2 | prog2 executa: STORE x">prog2</td>
+<td style="background:#22c55e" title="t=3 | prog2 executa: SYSCALL 1">prog2</td>
+<td style="background:#f9fafb;color:#94a3b8" title="t=4 | CPU ociosa">—</td>
+<td style="background:#f9fafb;color:#94a3b8" title="t=5 | CPU ociosa">—</td>
+<td style="background:#22c55e" title="t=6 | prog2 executa: SYSCALL 0">prog2</td>
+</tr>
+</tbody></table>
+<div class="legend">
+<div class="legend-item"><div class="legend-swatch" style="background:#22c55e"></div><span>Executando</span></div>
+<div class="legend-item"><div class="legend-swatch" style="background:#60a5fa"></div><span>Pronto</span></div>
+<div class="legend-item"><div class="legend-swatch" style="background:#f97316"></div><span>Bloqueado (I/O)</span></div>
+<div class="legend-item"><div class="legend-swatch" style="background:#d1d5db"></div><span>Período concluído</span></div>
+<div class="legend-item"><div class="legend-swatch" style="background:#9ca3af"></div><span>Terminado (SYSCALL 0)</span></div>
+<div class="legend-item"><div class="legend-swatch" style="background:#f9fafb"></div><span>CPU ociosa</span></div>
+</div>
+<div class="legend" style="margin-top:10px">
+<div class="legend-item"><span class="badge preempt">▶</span><span>Preempção EDF</span></div>
+<div class="legend-item"><span class="badge io">⏸</span><span>Início de bloqueio I/O</span></div>
+<div class="legend-item"><span class="badge miss">!</span><span>Deadline miss</span></div>
+<div class="legend-item"><span class="badge dl">◆</span><span>Deadline absoluto</span></div>
+</div>
+<table class="summary"><thead><tr>
+<th>Processo</th>
+<th>Arrival</th>
+<th>Período (Pi)</th>
+<th>Comp. Time (Ci)</th>
+<th>Períodos completos</th>
+<th>Deadline misses</th>
+</tr></thead><tbody>
+<tr><td>prog2</td><td>0</td><td>10</td><td>8</td><td>1</td><td>0</td></tr>
+</tbody></table>
+<div class="events"><h2>Log de eventos</h2><ul>
+<li class="ev-arrival">t=  0 &nbsp; arrival:prog2 (deadline=10)</li>
+<li class="ev-block">t=  3 &nbsp; io_block:prog2 (timer=3)</li>
+<li class="">t=  4 &nbsp; CPU ociosa</li>
+<li class="">t=  5 &nbsp; CPU ociosa</li>
+<li class="ev-unblock">t=  6 &nbsp; unblock:prog2</li>
+<li class="ev-halt">t=  6 &nbsp; halt:prog2</li>
+</ul></div>
+</div></body></html>

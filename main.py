@@ -76,6 +76,12 @@ def main():
     engine = SimulationEngine(pcbs, max_time=max_t)
     engine.run()
 
+    # Gera o relatório HTML com o Gantt detalhado
+    from src.gantt_renderer import render_html
+    out_path = "gantt.html"
+    render_html(engine.tick_records, pcbs, out_path)
+    print(f"\nGantt HTML salvo em: {out_path}")
+
 
 if __name__ == "__main__":
     main()
