@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from .simulation_engine import TickRecord
     from .pcb import PCB
 
-#asfas
 # ── colour palette ────────────────────────────────────────────────────────────
 _STATE_COLORS = {
     "EXECUTANDO": "#22c55e",   # green
