@@ -144,32 +144,5 @@ Tempo maximo de simulacao (padrao 50): 30
 
 ### Gantt HTML (`gantt.html`)
 
-Ao final da simulação é gerado um arquivo `gantt.html` auto-contido no diretório atual. Abra no navegador para visualizar:
+Ao final da simulação é gerado um arquivo `gantt.html` auto-contido no diretório atual. Abra no navegador para visualizar.
 
-- Gráfico de Gantt interativo com uma linha por processo e uma coluna por tick
-- Passe o mouse sobre as células para ver instrução executada e eventos do tick
-- **Badges** dentro das células indicam eventos relevantes:
-
-| Badge | Significado |
-|---|---|
-| `▶` roxo | Preempção EDF ocorreu nesse tick |
-| `⏸` laranja | Processo iniciou bloqueio de I/O |
-| `!` vermelho | Deadline miss |
-| `◆` vermelho | Deadline absoluto do processo |
-
-- **Legenda de cores** dos estados: Executando (verde), Pronto (azul), Bloqueado (laranja), Período concluído (cinza claro), Terminado (cinza)
-- Tabela resumo com Ci, Pi, períodos completados e deadline misses por processo
-- Log de eventos colorido e rolável
-
----
-
-## Programas de exemplo
-
-| Arquivo | Ci sugerido | Pi sugerido | Descrição |
-|---|---|---|---|
-| `prog1.asm` | 45 | 60 | Loop regressivo de 5 a 0 somando 10 por iteração; demonstra `BRZERO` e `BRANY` |
-| `prog2.asm` | 5 | 8 | Calcula `x + 5`; tarefa mínima, boa para forçar preempção com tarefas longas |
-| `prog3.asm` | 6 | 10 | Calcula `(a * b) / c`; demonstra `MULT` e `DIV` |
-| `prog4.asm` | 9 | 15 | Classifica variável em positivo/negativo/zero; demonstra `BRPOS` e `BRNEG` |
-| `prog5.asm` | 6 | 15 | Lê número (`SYSCALL 2`), multiplica por 3 e exibe (`SYSCALL 1`); dois bloqueios I/O |
-| `prog6.asm` | 4 | 10 | Dobra valor e exibe a cada período; encerra pelo Ci (sem `SYSCALL 0`), demonstra reativação periódica |
