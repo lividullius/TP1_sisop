@@ -11,10 +11,10 @@ from .instruction import Instruction
 @dataclass
 class TickRecord:
     t: int
-    running: Optional[str]          # process name or None (idle)
-    instruction: Optional[str]       # str(instr) executed this tick
-    states: Dict[str, str]           # {name: state.value} snapshot after tick
-    events: List[str] = field(default_factory=list)  # tagged event strings
+    running: Optional[str]          # nome do processo em execução, ou None se ocioso
+    instruction: Optional[str]       # str(instr) executada neste tick
+    states: Dict[str, str]           # snapshot {nome: estado} de todos os processos após o tick
+    events: List[str] = field(default_factory=list)  # eventos ocorridos no tick (chegada, preempção, etc.)
 
 
 class SimulationEngine:
@@ -109,6 +109,7 @@ class SimulationEngine:
         for p in self.all_pcbs:
             if p.state not in (ProcessState.FINALIZADO, ProcessState.BLOQUEADO):
                 continue
+            # offset % period == 0 detecta o início de cada novo período do processo
             offset = t - p.arrival_time
             if offset > 0 and offset % p.period == 0:
                 if p.state == ProcessState.BLOQUEADO:
@@ -165,6 +166,7 @@ class SimulationEngine:
         self._tick_instruction = instr_str
 
         result = self.cpu.execute_one(p)
+        # HALT significa PC fora do range — nenhuma instrução foi executada, então não desconta Ci
         if result != ExecutionResult.HALT:
             p.remaining_ci -= 1
 
@@ -193,6 +195,8 @@ class SimulationEngine:
 
     # ------------------------------------------------------------------
     def _all_done(self) -> bool:
+        # Só encerra quando todas as filas estão vazias E todos os processos estão TERMINADO.
+        # FINALIZADO não conta: o processo ainda vai reiniciar no próximo período.
         if self._pending or self._ready or self._blocked or self._running is not None:
             return False
         return all(p.state == ProcessState.TERMINADO for p in self.all_pcbs)

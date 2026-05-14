@@ -59,9 +59,11 @@ class CPU:
             divisor = self._resolve(instr, pcb)
             if divisor == 0:
                 raise ZeroDivisionError(f"Processo {pcb.name}: divisao por zero em PC={pcb.pc}")
-            pcb.acc //= divisor
+            pcb.acc //= divisor  # divisão inteira; mantém acc como int
             pcb.pc += 1
 
+        # Saltos: o parser já resolveu labels para índice numérico na 2ª passagem,
+        # então instr.operand é sempre um índice inteiro de instrução.
         elif m == "BRANY":
             pcb.pc = int(instr.operand)
 
@@ -81,11 +83,14 @@ class CPU:
 
     # ------------------------------------------------------------------
     def _resolve(self, instr, pcb: "PCB") -> int:
+        """Retorna o valor efetivo do operando: literal (#n) ou conteúdo da posição de memória."""
         if instr.mode == AddressingMode.IMMEDIATE:
             return int(instr.operand)
         return pcb.data_memory[self._mem_index(instr, pcb)]
 
     def _mem_index(self, instr, pcb: "PCB") -> int:
+        """Converte o operando para índice em data_memory.
+        Se for nome de variável (ex: 'x'), busca o índice em data_map; caso contrário usa o número diretamente."""
         operand = instr.operand
         data_map = pcb.program.data_map
         if operand in data_map:
