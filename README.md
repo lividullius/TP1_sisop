@@ -16,8 +16,12 @@ O simulador executa múltiplos processos periódicos em tempo discreto. A cada t
 TP1_sisop/
 ├── main.py                   # Ponto de entrada; coleta parâmetros e inicia simulação
 ├── programs/
-│   ├── prog1.asm             # Programa exemplo: loop com contador e output
-│   └── prog2.asm             # Programa exemplo: operação simples com output
+│   ├── prog1.asm             # Loop regressivo com BRZERO — CPU-bound longa (Ci=45)
+│   ├── prog2.asm             # Operação simples ADD imediato — tarefa mínima (Ci=5)
+│   ├── prog3.asm             # Aritmética com MULT e DIV — CPU-bound curta (Ci=6)
+│   ├── prog4.asm             # Desvios condicionais BRPOS/BRNEG — classificação de sinal (Ci=9)
+│   ├── prog5.asm             # Duplo bloqueio I/O — SYSCALL 2 (leitura) + SYSCALL 1 (escrita)
+│   └── prog6.asm             # Tarefa periódica sem SYSCALL 0 — encerra pelo limite de Ci
 └── src/
     ├── instruction.py        # Dataclass Instruction + enum AddressingMode (#imediato / direto)
     ├── program.py            # Dataclass Program: lista de instruções + mapa de variáveis
@@ -25,7 +29,8 @@ TP1_sisop/
     ├── cpu.py                # CPU: executa uma instrução por tick, retorna ExecutionResult
     ├── pcb.py                # PCB: contexto de processo (acc, pc, memória, estado EDF)
     ├── syscall_handler.py    # Trata SYSCALLs 0 (termina), 1 (output/bloqueia), 2 (input/bloqueia)
-    └── simulation_engine.py  # Motor principal: loop de ticks, fila EDF, relatório Gantt
+    ├── simulation_engine.py  # Motor principal: loop de ticks, fila EDF, relatório Gantt
+    └── gantt_renderer.py     # Gera gantt.html: gráfico interativo com estados, eventos e badges
 ```
 
 ### Descrição de cada módulo
@@ -39,6 +44,7 @@ TP1_sisop/
 | `pcb.py` | Armazena o contexto completo do processo (registradores, deadline, estado) |
 | `syscall_handler.py` | Processa chamadas de sistema: encerramento, I/O com bloqueio temporário |
 | `simulation_engine.py` | Orquestra ticks, fila de prontos (min-heap por deadline), preempção e relatório |
+| `gantt_renderer.py` | Gera `gantt.html` auto-contido com gráfico de Gantt interativo |
 
 ---
 
@@ -56,23 +62,32 @@ Os programas são escritos em arquivos `.asm` com duas seções:
 .endcode
 ```
 
+Comentários são iniciados com `;` e podem aparecer em qualquer linha.
+
 ### Instruções disponíveis
 
 | Instrução | Descrição |
 |---|---|
 | `LOAD x` / `LOAD #v` | Carrega valor no acumulador (direto ou imediato) |
-| `STORE x` | Salva acumulador na variável `x` |
+| `STORE x` | Salva acumulador na variável `x` (não aceita modo imediato) |
 | `ADD x` / `ADD #v` | Acumulador += valor |
 | `SUB x` / `SUB #v` | Acumulador -= valor |
 | `MULT x` / `MULT #v` | Acumulador *= valor |
-| `DIV x` / `DIV #v` | Acumulador //= valor |
+| `DIV x` / `DIV #v` | Acumulador //= valor (divisão inteira) |
 | `BRANY label` | Salto incondicional |
 | `BRPOS label` | Salto se acumulador > 0 |
 | `BRZERO label` | Salto se acumulador == 0 |
 | `BRNEG label` | Salto se acumulador < 0 |
-| `SYSCALL 0` | Encerra o processo |
-| `SYSCALL 1` | Imprime acumulador e bloqueia por 1–3 ticks |
-| `SYSCALL 2` | Lê valor do usuário e bloqueia por 1–3 ticks |
+| `SYSCALL 0` | Encerra o processo permanentemente |
+| `SYSCALL 1` | Imprime acumulador e bloqueia por 1–3 ticks (I/O) |
+| `SYSCALL 2` | Lê inteiro do terminal e bloqueia por 1–3 ticks (I/O) |
+
+### Modos de endereçamento
+
+| Sintaxe | Modo | Comportamento |
+|---|---|---|
+| `ADD x` | Direto | Lê o valor da variável `x` na memória de dados |
+| `ADD #5` | Imediato | Usa o literal `5` diretamente |
 
 ---
 
@@ -92,7 +107,7 @@ O programa pede interativamente:
    - Nome da tarefa (ex: `T1`)
    - Arrival time — instante de chegada (padrão: `0`)
    - **Ci** — número de instruções executadas por período
-   - **Pi** — duração do período
+   - **Pi** — duração do período (também é o deadline relativo)
 3. Tempo máximo de simulação (padrão: `50`)
 
 ### Exemplo de execução
@@ -101,24 +116,60 @@ O programa pede interativamente:
 Quantas tarefas deseja carregar? 2
 
 --- Tarefa 1 ---
-  Caminho do arquivo .asm: programs/prog1.asm
+  Caminho do arquivo .asm: programs/prog2.asm
   Nome da tarefa: T1
   Arrival time (padrao 0): 0
-  Ci — instrucoes por periodo: 4
+  Ci — instrucoes por periodo: 5
   Pi — periodo: 8
 
 --- Tarefa 2 ---
-  Caminho do arquivo .asm: programs/prog2.asm
+  Caminho do arquivo .asm: programs/prog3.asm
   Nome da tarefa: T2
   Arrival time (padrao 0): 0
-  Ci — instrucoes por periodo: 2
-  Pi — periodo: 5
+  Ci — instrucoes por periodo: 6
+  Pi — periodo: 10
 
-Tempo maximo de simulacao (padrao 50): 20
+Tempo maximo de simulacao (padrao 50): 30
 ```
 
-### Saída
+---
 
-- Linha por tick mostrando processo em execução, instrução e estado dos demais
-- Avisos de **deadline miss** durante a simulação
-- Relatório final com timeline Gantt, períodos completados e deadlines perdidos por processo
+## Saída
+
+### Terminal
+
+- Uma linha por tick mostrando processo em execução, instrução e estado dos demais processos
+- Avisos de **deadline miss** sinalizados durante a simulação
+- Relatório final com timeline Gantt em texto, períodos completados e deadlines perdidos por processo
+
+### Gantt HTML (`gantt.html`)
+
+Ao final da simulação é gerado um arquivo `gantt.html` auto-contido no diretório atual. Abra no navegador para visualizar:
+
+- Gráfico de Gantt interativo com uma linha por processo e uma coluna por tick
+- Passe o mouse sobre as células para ver instrução executada e eventos do tick
+- **Badges** dentro das células indicam eventos relevantes:
+
+| Badge | Significado |
+|---|---|
+| `▶` roxo | Preempção EDF ocorreu nesse tick |
+| `⏸` laranja | Processo iniciou bloqueio de I/O |
+| `!` vermelho | Deadline miss |
+| `◆` vermelho | Deadline absoluto do processo |
+
+- **Legenda de cores** dos estados: Executando (verde), Pronto (azul), Bloqueado (laranja), Período concluído (cinza claro), Terminado (cinza)
+- Tabela resumo com Ci, Pi, períodos completados e deadline misses por processo
+- Log de eventos colorido e rolável
+
+---
+
+## Programas de exemplo
+
+| Arquivo | Ci sugerido | Pi sugerido | Descrição |
+|---|---|---|---|
+| `prog1.asm` | 45 | 60 | Loop regressivo de 5 a 0 somando 10 por iteração; demonstra `BRZERO` e `BRANY` |
+| `prog2.asm` | 5 | 8 | Calcula `x + 5`; tarefa mínima, boa para forçar preempção com tarefas longas |
+| `prog3.asm` | 6 | 10 | Calcula `(a * b) / c`; demonstra `MULT` e `DIV` |
+| `prog4.asm` | 9 | 15 | Classifica variável em positivo/negativo/zero; demonstra `BRPOS` e `BRNEG` |
+| `prog5.asm` | 6 | 15 | Lê número (`SYSCALL 2`), multiplica por 3 e exibe (`SYSCALL 1`); dois bloqueios I/O |
+| `prog6.asm` | 4 | 10 | Dobra valor e exibe a cada período; encerra pelo Ci (sem `SYSCALL 0`), demonstra reativação periódica |
